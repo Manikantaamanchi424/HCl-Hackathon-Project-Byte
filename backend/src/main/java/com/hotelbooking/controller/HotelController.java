@@ -1,11 +1,13 @@
 package com.hotelbooking.controller;
 
 import com.hotelbooking.model.Hotel;
+import com.hotelbooking.model.Room;
 import com.hotelbooking.service.HotelService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -39,7 +41,15 @@ public class HotelController {
 
     @PostMapping
     @Operation(summary = "Create a new hotel (Admin only)")
+    @PreAuthorize("hasRole('ADMIN')")
     public Hotel createHotel(@RequestBody Hotel hotel) {
         return hotelService.createHotel(hotel);
+    }
+
+    @PostMapping("/{hotelId}/rooms")
+    @Operation(summary = "Add a new room to a hotel (Admin only)")
+    @PreAuthorize("hasRole('ADMIN')")
+    public Room addRoom(@PathVariable Long hotelId, @RequestBody Room room) {
+        return hotelService.addRoomToHotel(hotelId, room);
     }
 }

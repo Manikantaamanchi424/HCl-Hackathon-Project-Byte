@@ -13,6 +13,7 @@ public class Room {
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "hotel_id", nullable = false)
+    @com.fasterxml.jackson.annotation.JsonIgnoreProperties("rooms")
     private Hotel hotel;
 
     @Column(nullable = false)

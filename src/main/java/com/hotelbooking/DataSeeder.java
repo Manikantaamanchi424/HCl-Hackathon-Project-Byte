@@ -62,6 +62,20 @@ public class DataSeeder implements CommandLineRunner {
             h2.setAmenities("Beach Access, Bar, Spa");
             hotelRepository.save(h2);
 
+            Hotel h3 = new Hotel();
+            h3.setName("Mountain View Lodge");
+            h3.setLocation("Aspen");
+            h3.setDescription("Cozy lodge in the snowy mountains");
+            h3.setAmenities("Fireplace, Ski-in/Ski-out, Sauna");
+            hotelRepository.save(h3);
+
+            Hotel h4 = new Hotel();
+            h4.setName("Desert Oasis");
+            h4.setLocation("Phoenix");
+            h4.setDescription("Modern resort in the Arizona desert");
+            h4.setAmenities("Infinity Pool, Golf Course, WiFi");
+            hotelRepository.save(h4);
+
             // Seed Rooms
             Room r1 = new Room();
             r1.setHotel(h1);
@@ -83,6 +97,20 @@ public class DataSeeder implements CommandLineRunner {
             r3.setPrice(350.0);
             r3.setAvailability(true);
             roomRepository.save(r3);
+
+            Room r4 = new Room();
+            r4.setHotel(h3);
+            r4.setType("CABIN");
+            r4.setPrice(300.0);
+            r4.setAvailability(true);
+            roomRepository.save(r4);
+
+            Room r5 = new Room();
+            r5.setHotel(h4);
+            r5.setType("PRESIDENTIAL");
+            r5.setPrice(1200.0);
+            r5.setAvailability(true);
+            roomRepository.save(r5);
             
             System.out.println("Database seeded successfully!");
         }

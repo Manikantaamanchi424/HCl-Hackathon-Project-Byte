@@ -24,6 +24,7 @@ public class Hotel {
     private String amenities; // Simplified as a comma-separated string or use a collection
 
     @OneToMany(mappedBy = "hotel", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @com.fasterxml.jackson.annotation.JsonIgnoreProperties("hotel")
     private List<Room> rooms;
 
     public Hotel() {}

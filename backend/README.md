@@ -1,4 +1,4 @@
-# Hotel Booking Application Backend
+# Hotel Booking Application Backend (Updated)
 
 A robust RESTful API built with Spring Boot for managing hotel searches and room bookings.
 

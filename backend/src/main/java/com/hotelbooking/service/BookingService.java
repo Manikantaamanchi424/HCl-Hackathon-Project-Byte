@@ -31,18 +31,23 @@ public class BookingService {
         Room room = roomRepository.findById(roomId)
                 .orElseThrow(() -> new ResourceNotFoundException("Room not found"));
 
-        if (!room.getAvailability()) {
-            throw new ApiException("Room is not available for booking");
+        // Global maintenance check
+        if (room.getAvailability() != null && !room.getAvailability()) {
+            throw new ApiException("Room is currently under maintenance or unavailable");
+        }
+
+        // Date-based availability check
+        List<Booking> overlaps = bookingRepository.findOverlappingBookings(
+                roomId, bookingRequest.getCheckInDate(), bookingRequest.getCheckOutDate());
+        
+        if (!overlaps.isEmpty()) {
+            throw new ApiException("Room is already booked for the selected dates");
         }
 
         bookingRequest.setUser(user);
         bookingRequest.setRoom(room);
         bookingRequest.setStatus("CONFIRMED");
         
-        // Update room availability
-        room.setAvailability(false);
-        roomRepository.save(room);
-
         return bookingRepository.save(bookingRequest);
     }
 
@@ -55,12 +60,6 @@ public class BookingService {
                 .orElseThrow(() -> new ResourceNotFoundException("Booking not found"));
         
         booking.setStatus("CANCELLED");
-        
-        // Make room available again
-        Room room = booking.getRoom();
-        room.setAvailability(true);
-        roomRepository.save(room);
-        
         bookingRepository.save(booking);
     }
 }

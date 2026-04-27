@@ -3,14 +3,20 @@ import api from '../api/axios';
 import SearchBar from '../components/SearchBar';
 import HotelCard from '../components/HotelCard';
 import { motion } from 'framer-motion';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Plus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import AddHotelModal from '../components/AddHotelModal';
 
 const HomePage = () => {
   const [hotels, setHotels] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showAddHotel, setShowAddHotel] = useState(false);
   const navigate = useNavigate();
+  const { user } = useAuth();
+
+  const isAdmin = user?.roles?.includes('ROLE_ADMIN');
 
   useEffect(() => {
     fetchHotels();
@@ -65,6 +71,23 @@ const HomePage = () => {
         <div style={{ marginBottom: '4rem' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
             <h2>Available Hotels ({hotels.length})</h2>
+            {isAdmin && (
+              <button 
+                onClick={() => setShowAddHotel(true)}
+                style={{ 
+                  backgroundColor: 'var(--primary)', 
+                  color: 'white', 
+                  padding: '0.6rem 1.25rem', 
+                  borderRadius: 'var(--radius-md)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  fontWeight: 600
+                }}
+              >
+                <Plus size={18} /> Add New Hotel
+              </button>
+            )}
           </div>
 
           {loading ? (
@@ -94,6 +117,12 @@ const HomePage = () => {
           )}
         </div>
       </div>
+
+      <AddHotelModal 
+        isOpen={showAddHotel} 
+        onClose={() => setShowAddHotel(false)} 
+        onSuccess={fetchHotels} 
+      />
     </div>
   );
 };

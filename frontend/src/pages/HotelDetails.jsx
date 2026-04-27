@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
-import { MapPin, Star, Wifi, Coffee, Wind, Waves, CheckCircle2, Loader2, Calendar } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { MapPin, Star, Wifi, Coffee, Wind, Waves, CheckCircle2, Loader2, Calendar, Plus, X } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const HotelDetails = () => {
   const { id } = useParams();
@@ -12,6 +12,8 @@ const HotelDetails = () => {
   const [hotel, setHotel] = useState(null);
   const [loading, setLoading] = useState(true);
   const [bookingLoading, setBookingLoading] = useState(false);
+  const [showAddRoom, setShowAddRoom] = useState(false);
+  const [newRoom, setNewRoom] = useState({ type: '', price: '', availability: true });
   const [dates, setDates] = useState({ checkIn: '2026-05-01', checkOut: '2026-05-05' });
 
   useEffect(() => {
@@ -52,6 +54,21 @@ const HotelDetails = () => {
     }
   };
 
+  const handleAddRoom = async (e) => {
+    e.preventDefault();
+    try {
+      await api.post(`/hotels/${id}/rooms`, newRoom);
+      alert('Room added successfully!');
+      setShowAddRoom(false);
+      setNewRoom({ type: '', price: '', availability: true });
+      fetchHotel(); // Refresh data
+    } catch (error) {
+      alert('Failed to add room. Admin privileges required.');
+    }
+  };
+
+  const isAdmin = user?.roles?.includes('ROLE_ADMIN');
+
   if (loading) return <div style={{ display: 'flex', justifyContent: 'center', padding: '10rem' }}><Loader2 className="animate-spin" size={48} /></div>;
   if (!hotel) return <div>Hotel not found</div>;
 
@@ -86,7 +103,78 @@ const HotelDetails = () => {
             </section>
 
             <section>
-              <h2 style={{ marginBottom: '1.5rem' }}>Available Rooms</h2>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                <h2 style={{ margin: 0 }}>Available Rooms</h2>
+                {isAdmin && (
+                  <button 
+                    onClick={() => setShowAddRoom(!showAddRoom)}
+                    style={{ 
+                      backgroundColor: showAddRoom ? '#64748b' : 'var(--primary)', 
+                      color: 'white', 
+                      padding: '0.5rem 1rem', 
+                      borderRadius: 'var(--radius-md)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.5rem',
+                      fontWeight: 600
+                    }}
+                  >
+                    {showAddRoom ? <X size={18} /> : <Plus size={18} />}
+                    {showAddRoom ? 'Cancel' : 'Add New Room'}
+                  </button>
+                )}
+              </div>
+
+              <AnimatePresence>
+                {showAddRoom && (
+                  <motion.div 
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    style={{ overflow: 'hidden', marginBottom: '2rem' }}
+                  >
+                    <form onSubmit={handleAddRoom} className="glass-card" style={{ padding: '2rem', display: 'grid', gridTemplateColumns: '1fr 1fr 1fr auto', gap: '1rem', alignItems: 'end' }}>
+                      <div>
+                        <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, marginBottom: '0.5rem' }}>Room Type</label>
+                        <input 
+                          type="text" 
+                          placeholder="e.g. Presidential Suite" 
+                          value={newRoom.type}
+                          onChange={(e) => setNewRoom({...newRoom, type: e.target.value})}
+                          required
+                          style={{ width: '100%', padding: '0.6rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)' }}
+                        />
+                      </div>
+                      <div>
+                        <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, marginBottom: '0.5rem' }}>Price per Night</label>
+                        <input 
+                          type="number" 
+                          placeholder="0.00" 
+                          value={newRoom.price}
+                          onChange={(e) => setNewRoom({...newRoom, price: e.target.value})}
+                          required
+                          style={{ width: '100%', padding: '0.6rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)' }}
+                        />
+                      </div>
+                      <div>
+                        <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, marginBottom: '0.5rem' }}>Status</label>
+                        <select 
+                          value={newRoom.availability}
+                          onChange={(e) => setNewRoom({...newRoom, availability: e.target.value === 'true'})}
+                          style={{ width: '100%', padding: '0.6rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)' }}
+                        >
+                          <option value="true">Available</option>
+                          <option value="false">Unavailable</option>
+                        </select>
+                      </div>
+                      <button type="submit" style={{ backgroundColor: '#059669', color: 'white', padding: '0.6rem 1.5rem', borderRadius: 'var(--radius-sm)', fontWeight: 700 }}>
+                        Save Room
+                      </button>
+                    </form>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
                 {hotel.rooms?.map(room => (
                   <div key={room.id} className="glass-card" style={{ padding: '1.5rem', display: 'grid', gridTemplateColumns: '1fr 1.5fr auto', gap: '2rem', alignItems: 'center' }}>

@@ -1,0 +1,56 @@
+# Hotel Booking System - Database Structure
+
+The system uses a relational database (MySQL) with the following schema design. 
+
+## 1. Tables Overview
+
+### a. `users` Table
+Stores user information and credentials for authentication.
+- `id` (BIGINT, Primary Key, Auto Increment): Unique identifier for each user.
+- `name` (VARCHAR, Not Null): Full name of the user.
+- `email` (VARCHAR, Not Null, Unique): Email used for login.
+- `password` (VARCHAR, Not Null): BCrypt encoded password.
+- `role` (VARCHAR, Not Null): User role (e.g., 'ROLE_USER', 'ROLE_ADMIN').
+
+### b. `hotels` Table
+Stores details of the hotels available on the platform.
+- `id` (BIGINT, Primary Key, Auto Increment): Unique identifier for each hotel.
+- `name` (VARCHAR, Not Null): Name of the hotel.
+- `location` (VARCHAR, Not Null): City/Area where the hotel is located.
+- `description` (VARCHAR(1000)): Detailed description of the hotel.
+- `amenities` (VARCHAR): Comma-separated list of amenities (e.g., 'WiFi, Pool, Gym').
+
+### c. `rooms` Table
+Stores information about specific rooms within a hotel.
+- `id` (BIGINT, Primary Key, Auto Increment): Unique identifier for each room.
+- `hotel_id` (BIGINT, Foreign Key): Reference to the `hotels` table.
+- `type` (VARCHAR, Not Null): Type of room (e.g., 'DELUXE', 'SUITE', 'SINGLE').
+- `price` (DOUBLE, Not Null): Price per night.
+- `availability` (BOOLEAN, Not Null): Global status (True = Open, False = Maintenance/Closed).
+
+### d. `bookings` Table
+Stores reservation records for users and rooms.
+- `id` (BIGINT, Primary Key, Auto Increment): Unique identifier for each booking.
+- `user_id` (BIGINT, Foreign Key): Reference to the `users` table.
+- `room_id` (BIGINT, Foreign Key): Reference to the `rooms` table.
+- `check_in_date` (DATE, Not Null): Starting date of the stay.
+- `check_out_date` (DATE, Not Null): Ending date of the stay.
+- `status` (VARCHAR, Not Null): Booking status (e.g., 'CONFIRMED', 'CANCELLED').
+
+---
+
+## 2. Relationships
+
+1. **Hotel to Room (One-to-Many)**: 
+   One hotel can have multiple rooms. Linked via `rooms.hotel_id`.
+   
+2. **User to Booking (One-to-Many)**: 
+   One user can make multiple bookings. Linked via `bookings.user_id`.
+   
+3. **Room to Booking (One-to-Many)**: 
+   One room can have multiple bookings (over different time slots). Linked via `bookings.room_id`.
+
+## 3. Availability Logic
+Availability is calculated dynamically. A room is considered **Available** for a specific date range if:
+1. The `availability` flag in the `rooms` table is `true`.
+2. There are no existing bookings in the `bookings` table for the same `room_id` where the dates overlap with the requested range and the status is not 'CANCELLED'.
